@@ -27,7 +27,7 @@ module.exports = {
             error: false,
             details: await res.getModelListDetails(Pizza),
             result
-        })
+        });
     },
 
     create: async (req, res) => {
@@ -40,6 +40,13 @@ module.exports = {
         // console.log([...new Set([1,1,1,2,3,4,4,4,5])])
 
         req.body.toppingIds = [...new Set(req.body.toppingIds)];
+
+        //? File upload
+        // console.log(req.file); // Single
+        // console.log(req.files); // Array
+        if (req.file) {
+            req.body.image = req.file.filename
+        };
 
         const result = await Pizza.create(req.body);
 
@@ -55,7 +62,7 @@ module.exports = {
             #swagger.summary = 'Get Single Pizza'
         */
 
-        const result = await Pizza.findOne({ _id: req.params.id }).populate('toppingIds')
+        const result = await Pizza.findOne({ _id: req.params.id }).populate('toppingIds');
 
         res.status(200).send({
             error: false,
@@ -69,17 +76,22 @@ module.exports = {
             #swagger.summary = 'Update Pizza'
         */
 
+        //? File upload
+        if (req.file) {
+            req.body.image = req.file.filename
+        };
+
         const result = await Pizza.updateOne({ _id: req.params.id }, req.body, { runValidators: true });
 
         if (!result.modifiedCount) {
             res.errorStatusCode = 404
             throw new Error('Data is not updated.')
-        }
+        };
 
         res.status(202).send({
             error: false,
             new: await Pizza.findOne({ _id: req.params.id })
-        })
+        });
     },
 
     delete: async (req, res) => {
@@ -93,6 +105,6 @@ module.exports = {
         res.status(result.deletedCount ? 204 : 404).send({
             error: true,
             message: 'Data is not found or already deleted.'
-        })
+        });
     }
 };
